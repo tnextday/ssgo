@@ -22,3 +22,6 @@ _testmain.go
 *.exe
 *.test
 *.prof
+ssgo.iml
+ssgo.ipr
+ssgo.iws
