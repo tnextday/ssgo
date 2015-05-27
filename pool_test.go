@@ -15,7 +15,7 @@ func pingBenchmark(t *testing.T, poolCache, parallel, times int)  {
 				t.Error(err)
 			}
 			defer cn.Release()
-			_, e := cn.Cmd("ping")
+			_, e := cn.Do("ping")
 			if e != nil{
 				t.Error(e)
 			}

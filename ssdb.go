@@ -30,16 +30,7 @@ func Connect(ip string, port int) (*Client, error) {
 	return &c, nil
 }
 
-func (c *Client) Do(args ...interface{}) ([]string, error) {
-	err := c.send(args)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.recv()
-	return resp, err
-}
-
-func (c *Client) Cmd(args ...interface{}) (Reply, error){
+func (c *Client) Do(args ...interface{}) (Reply, error){
 
 	if err := c.send(args); err != nil {
 		return nil, err
