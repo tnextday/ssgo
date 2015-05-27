@@ -72,7 +72,7 @@ func (cr *ConPool) Close() {
 	for {
 		select {
 		case conn = <-cr.conns:
-			conn.Close()
+			conn.close()
 		default:
 			return
 		}
@@ -83,7 +83,7 @@ func (cr *ConPool) push(cn *Client) {
 	select {
 	case cr.conns <- cn:
 	default:
-		cn.Close()
+		cn.close()
 	}
 }
 

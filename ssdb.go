@@ -211,17 +211,17 @@ func (c *Client) parse() []string {
 }
 
 // Close The Client Connection
-func (c *Client) Close() error {
+func (c *Client) close() error {
 	return c.sock.Close()
 }
 
 func (c *Client) Release() error {
 	if c.netErr != nil {
 		// if client have net error, try to close it
-		return c.Close()
+		return c.close()
 	} else if c.pool != nil {
 		c.pool.push(c)
 		return nil
 	}
-	return c.Close()
+	return c.close()
 }
