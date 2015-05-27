@@ -6,6 +6,7 @@ import (
 	"net"
 	"strconv"
 	"encoding/json"
+	"errors"
 )
 
 type Client struct {
@@ -38,39 +39,20 @@ func (c *Client) Do(args ...interface{}) ([]string, error) {
 	return resp, err
 }
 
-func (c *Client) Cmd(args ...interface{}) *Reply {
-
-	r := &Reply{
-		State: ReplyError,
-		Data:  []string{},
-	}
+func (c *Client) Cmd(args ...interface{}) (Reply, error){
 
 	if err := c.send(args); err != nil {
-		return r
+		return nil, err
 	}
 
 	resp, err := c.recv()
 	if err != nil || len(resp) < 1 {
-		return r
+		return nil, err
 	}
-
-	switch resp[0] {
-	case ReplyOK, ReplyNotFound, ReplyError, ReplyFail, ReplyClientError:
-		r.State = resp[0]
+	if resp[0] != "ok"{
+		return nil, errors.New(resp[0])
 	}
-
-	if r.State == ReplyOK {
-		for k, v := range resp {
-
-			if k == 0 {
-				continue
-			}
-
-			r.Data = append(r.Data, v)
-		}
-	}
-
-	return r
+	return resp[1:], nil
 }
 
 func (c *Client) Set(key string, val string) (interface{}, error) {

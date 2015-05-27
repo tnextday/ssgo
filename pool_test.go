@@ -14,10 +14,10 @@ func pingBenchmark(t *testing.T, poolCache, parallel, times int)  {
 			if err != nil {
 				t.Error(err)
 			}
-			defer cn.Close()
-			r := cn.Cmd("ping")
-			if r.State != ReplyOK{
-				t.Error(r.State)
+			defer cn.Release()
+			_, e := cn.Cmd("ping")
+			if e != nil{
+				t.Error(e)
 			}
 			<-sem
 		}()

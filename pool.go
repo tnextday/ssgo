@@ -56,16 +56,16 @@ func (cr *ConPool) dialNew() (*Client, error) {
 	return cn, nil
 }
 
-func (cr *ConPool) Cmd(args ...interface{}) *Reply {
-
-	cn, _ := cr.GetClient()
-	defer cn.Release()
-
-	cn.sock.SetReadDeadline(time.Now().Add(cr.ctimeout))
-	cn.sock.SetWriteDeadline(time.Now().Add(cr.ctimeout))
-
-	return cn.Cmd(args...)
-}
+//func (cr *ConPool) Cmd(args ...interface{}) *Reply {
+//
+//	cn, _ := cr.GetClient()
+//	defer cn.Release()
+//
+//	cn.sock.SetReadDeadline(time.Now().Add(cr.ctimeout))
+//	cn.sock.SetWriteDeadline(time.Now().Add(cr.ctimeout))
+//
+//	return cn.Cmd(args...)
+//}
 
 func (cr *ConPool) Close() {
 	var conn *Client
@@ -80,7 +80,6 @@ func (cr *ConPool) Close() {
 }
 
 func (cr *ConPool) push(cn *Client) {
-	cr.conns <- cn
 	select {
 	case cr.conns <- cn:
 	default:
@@ -95,5 +94,4 @@ func (cr *ConPool) GetClient() (cn *Client, err error) {
 	default:
 		return cr.dialNew()
 	}
-	return <-cr.conns, nil
 }
