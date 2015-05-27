@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"encoding/json"
 )
 
 type Client struct {
@@ -147,7 +148,11 @@ func (c *Client) send(args []interface{}) error {
 		case nil:
 			s = ""
 		default:
-			return fmt.Errorf("bad arguments")
+			buf, e := json.Marshal(arg)
+			if e !=nil {
+				return fmt.Errorf("bad arguments")
+			}
+			s = string(buf)
 		}
 		buf.WriteString(fmt.Sprintf("%d", len(s)))
 		buf.WriteByte('\n')
