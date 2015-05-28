@@ -15,98 +15,23 @@
 package ssgo
 
 import (
-	"math"
 	"reflect"
 	"testing"
 )
 
-var scanConversionTests = []struct {
-	src  interface{}
-	dest interface{}
-}{
-	{[]byte("-inf"), math.Inf(-1)},
-	{[]byte("+inf"), math.Inf(1)},
-	{[]byte("0"), float64(0)},
-	{[]byte("3.14159"), float64(3.14159)},
-	{[]byte("3.14"), float32(3.14)},
-	{[]byte("-100"), int(-100)},
-	{[]byte("101"), int(101)},
-	{int64(102), int(102)},
-	{[]byte("103"), uint(103)},
-	{int64(104), uint(104)},
-	{[]byte("105"), int8(105)},
-	{int64(106), int8(106)},
-	{[]byte("107"), uint8(107)},
-	{int64(108), uint8(108)},
-	{[]byte("0"), false},
-	{int64(0), false},
-	{[]byte("f"), false},
-	{[]byte("1"), true},
-	{int64(1), true},
-	{[]byte("t"), true},
-	{[]byte("hello"), "hello"},
-	{[]byte("world"), []byte("world")},
-	{[]interface{}{[]byte("foo")}, []interface{}{[]byte("foo")}},
-	{[]interface{}{[]byte("foo")}, []string{"foo"}},
-	{[]interface{}{[]byte("hello"), []byte("world")}, []string{"hello", "world"}},
-	{[]interface{}{[]byte("bar")}, [][]byte{[]byte("bar")}},
-	{[]interface{}{[]byte("1")}, []int{1}},
-	{[]interface{}{[]byte("1"), []byte("2")}, []int{1, 2}},
-	{[]interface{}{[]byte("1"), []byte("2")}, []float64{1, 2}},
-	{[]interface{}{[]byte("1")}, []byte{1}},
-	{[]interface{}{[]byte("1")}, []bool{true}},
-}
-
-func TestScanConversion(t *testing.T) {
-	for _, tt := range scanConversionTests {
-		values := []interface{}{tt.src}
-		dest := reflect.New(reflect.TypeOf(tt.dest))
-		values, err := Scan(values, dest.Interface())
-		if err != nil {
-			t.Errorf("Scan(%v) returned error %v", tt, err)
-			continue
-		}
-		if !reflect.DeepEqual(tt.dest, dest.Elem().Interface()) {
-			t.Errorf("Scan(%v) returned %v, want %v", tt, dest.Elem().Interface(), tt.dest)
-		}
-	}
-}
-
-var scanConversionErrorTests = []struct {
-	src  interface{}
-	dest interface{}
-}{
-	{[]byte("1234"), byte(0)},
-	{int64(1234), byte(0)},
-	{[]byte("-1"), byte(0)},
-	{int64(-1), byte(0)},
-	{[]byte("junk"), false},
-}
-
-func TestScanConversionError(t *testing.T) {
-	for _, tt := range scanConversionErrorTests {
-		values := []interface{}{tt.src}
-		dest := reflect.New(reflect.TypeOf(tt.dest))
-		values, err := Scan(values, dest.Interface())
-		if err == nil {
-			t.Errorf("Scan(%v) did not return error", tt)
-		}
-	}
-}
-
 type s0 struct {
 	X  int
-	Y  int `redis:"y"`
+	Y  int `ssgo:"y"`
 	Bt bool
 }
 
 type s1 struct {
-	X  int    `redis:"-"`
-	I  int    `redis:"i"`
-	U  uint   `redis:"u"`
-	S  string `redis:"s"`
-	P  []byte `redis:"p"`
-	B  bool   `redis:"b"`
+	X  int    `ssgo:"-"`
+	I  int    `ssgo:"i"`
+	U  uint   `ssgo:"u"`
+	S  string `ssgo:"s"`
+	P  []byte `ssgo:"p"`
+	B  bool   `ssgo:"b"`
 	Bt bool
 	Bf bool
 	s0
@@ -126,14 +51,9 @@ var scanStructTests = []struct {
 func TestScanStruct(t *testing.T) {
 	for _, tt := range scanStructTests {
 
-		var reply []interface{}
-		for _, v := range tt.reply {
-			reply = append(reply, []byte(v))
-		}
-
 		value := reflect.New(reflect.ValueOf(tt.value).Type().Elem())
 
-		if err := ScanStruct(reply, value.Interface()); err != nil {
+		if err := ScanStruct(tt.reply, value.Interface()); err != nil {
 			t.Fatalf("ScanStruct(%s) returned error %v", tt.title, err)
 		}
 
@@ -144,7 +64,7 @@ func TestScanStruct(t *testing.T) {
 }
 
 func TestBadScanStructArgs(t *testing.T) {
-	x := []interface{}{"A", "b"}
+	x := []string{"A", "b"}
 	test := func(v interface{}) {
 		if err := ScanStruct(x, v); err == nil {
 			t.Errorf("Expect error for ScanStruct(%T, %T)", x, v)
@@ -162,89 +82,4 @@ func TestBadScanStructArgs(t *testing.T) {
 	x = x[:1]
 	v2 := struct{ A string }{}
 	test(&v2)
-}
-
-var scanSliceTests = []struct {
-	src        []interface{}
-	fieldNames []string
-	ok         bool
-	dest       interface{}
-}{
-	{
-		[]interface{}{[]byte("1"), nil, []byte("-1")},
-		nil,
-		true,
-		[]int{1, 0, -1},
-	},
-	{
-		[]interface{}{[]byte("1"), nil, []byte("2")},
-		nil,
-		true,
-		[]uint{1, 0, 2},
-	},
-	{
-		[]interface{}{[]byte("-1")},
-		nil,
-		false,
-		[]uint{1},
-	},
-	{
-		[]interface{}{[]byte("hello"), nil, []byte("world")},
-		nil,
-		true,
-		[][]byte{[]byte("hello"), nil, []byte("world")},
-	},
-	{
-		[]interface{}{[]byte("hello"), nil, []byte("world")},
-		nil,
-		true,
-		[]string{"hello", "", "world"},
-	},
-	{
-		[]interface{}{[]byte("a1"), []byte("b1"), []byte("a2"), []byte("b2")},
-		nil,
-		true,
-		[]struct{ A, B string }{{"a1", "b1"}, {"a2", "b2"}},
-	},
-	{
-		[]interface{}{[]byte("a1"), []byte("b1")},
-		nil,
-		false,
-		[]struct{ A, B, C string }{{"a1", "b1", ""}},
-	},
-	{
-		[]interface{}{[]byte("a1"), []byte("b1"), []byte("a2"), []byte("b2")},
-		nil,
-		true,
-		[]*struct{ A, B string }{{"a1", "b1"}, {"a2", "b2"}},
-	},
-	{
-		[]interface{}{[]byte("a1"), []byte("b1"), []byte("a2"), []byte("b2")},
-		[]string{"A", "B"},
-		true,
-		[]struct{ A, C, B string }{{"a1", "", "b1"}, {"a2", "", "b2"}},
-	},
-	{
-		[]interface{}{[]byte("a1"), []byte("b1"), []byte("a2"), []byte("b2")},
-		nil,
-		false,
-		[]struct{}{},
-	},
-}
-
-func TestScanSlice(t *testing.T) {
-	for _, tt := range scanSliceTests {
-
-		typ := reflect.ValueOf(tt.dest).Type()
-		dest := reflect.New(typ)
-
-		err := ScanSlice(tt.src, dest.Interface(), tt.fieldNames...)
-		if tt.ok != (err == nil) {
-			t.Errorf("ScanSlice(%v, []%s, %v) returned error %v", tt.src, typ, tt.fieldNames, err)
-			continue
-		}
-		if tt.ok && !reflect.DeepEqual(dest.Elem().Interface(), tt.dest) {
-			t.Errorf("ScanSlice(src, []%s) returned %#v, want %#v", typ, dest.Elem().Interface(), tt.dest)
-		}
-	}
 }

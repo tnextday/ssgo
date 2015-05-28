@@ -2,11 +2,11 @@ package ssgo
 
 import (
 	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"strconv"
-	"encoding/json"
-	"errors"
 )
 
 type Client struct {
@@ -30,7 +30,7 @@ func Connect(ip string, port int) (*Client, error) {
 	return &c, nil
 }
 
-func (c *Client) Do(args ...interface{}) (Reply, error){
+func (c *Client) Do(args ...interface{}) (Reply, error) {
 
 	if err := c.send(args); err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func (c *Client) Do(args ...interface{}) (Reply, error){
 	if err != nil || len(resp) < 1 {
 		return nil, err
 	}
-	if resp[0] != "ok"{
+	if resp[0] != "ok" {
 		return nil, errors.New(resp[0])
 	}
 	return resp[1:], nil
@@ -85,6 +85,32 @@ func (c *Client) Del(key string) (interface{}, error) {
 	return nil, fmt.Errorf("bad response:resp:%v:", resp)
 }
 
+func (c *Client) MultiHSet(name string, obj interface{}, keys ...string) error {
+	args := Args{"multi_hset", name}.AddFlat(obj, keys...)
+	_, e := c.Do(args...)
+	return e
+}
+
+func (c *Client) MultiHGet(name string, obj interface{}, keys ...string) error {
+	var (
+		rep Reply
+		e   error
+	)
+	if len(keys) > 0 {
+		args := []interface{}{"multi_hget", name}
+		for _, v := range keys {
+			args = append(args, v)
+		}
+		rep, e = c.Do(args...)
+	} else {
+		rep, e = c.Do("hgetall", name)
+	}
+	if e != nil {
+		return e
+	}
+	return ScanStruct(rep, obj)
+}
+
 func (c *Client) Send(args ...interface{}) error {
 	return c.send(args)
 }
@@ -122,7 +148,7 @@ func (c *Client) send(args []interface{}) error {
 			s = ""
 		default:
 			buf, e := json.Marshal(arg)
-			if e !=nil {
+			if e != nil {
 				return fmt.Errorf("bad arguments")
 			}
 			s = string(buf)

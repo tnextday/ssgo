@@ -29,8 +29,8 @@ func pingBenchmark(t *testing.T, poolCache, parallel, times int)  {
 }
 
 func TestConnPool(t *testing.T) {
-	pingBenchmark(t, 3, 2, 10000)
-	pingBenchmark(t, 3, 10, 10000)
-	pingBenchmark(t, 3, 100, 10000)
+	pingBenchmark(t, 3, 2, 1000)
+	pingBenchmark(t, 3, 10, 1000)
+	pingBenchmark(t, 3, 100, 1000)
 }
 
