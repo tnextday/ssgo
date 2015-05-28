@@ -46,6 +46,14 @@ func (c *Client) Do(args ...interface{}) (Reply, error) {
 	return resp[1:], nil
 }
 
+func (c *Client)DoIgnoreErr(args ...interface{}) Reply {
+	r, e := c.Do(args...)
+	if e != nil {
+		return Reply{}
+	}
+	return r
+}
+
 func (c *Client) Set(key string, val string) (interface{}, error) {
 	resp, err := c.Do("set", key, val)
 	if err != nil {
