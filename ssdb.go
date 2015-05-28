@@ -111,12 +111,12 @@ func (c *Client) MultiHGet(name string, obj interface{}, keys ...string) error {
 	return ScanStruct(rep, obj)
 }
 
-func (c *Client) GenAutoIncId(name string) (int64, error){
+func (c *Client) GenAutoIncId(name string) int64{
 	rep, e := c.Do("incr", name)
 	if e != nil {
-		return 0, e
+		return 0
 	}
-	return rep.Int64(), nil
+	return rep.Int64()
 }
 
 func (c *Client) Send(args ...interface{}) error {
