@@ -22,7 +22,7 @@ func NewConPool(hostAddr string, maxConn int) *ConPool {
 	cr := &ConPool{
 		ctype:    "tcp",
 		clink:    hostAddr,
-		ctimeout: time.Duration(10) * time.Second,
+		ctimeout: time.Duration(30) * time.Second,
 		conns:    make(chan *Client, maxConn),
 	}
 
@@ -68,6 +68,19 @@ func (cr *ConPool) Do(args ...interface{}) (Reply, error) {
 	cn.sock.SetWriteDeadline(time.Now().Add(cr.ctimeout))
 
 	return cn.Do(args...)
+}
+
+
+func (cr *ConPool)BatchDo(batch BatchExec) ([]ReplyE, error) {
+	cn, e := cr.GetClient()
+	if e != nil {
+		return nil, e
+	}
+	defer cn.Release()
+
+	cn.sock.SetReadDeadline(time.Now().Add(cr.ctimeout))
+	cn.sock.SetWriteDeadline(time.Now().Add(cr.ctimeout))
+	return cn.BatchDo(batch)
 }
 
 func (cr *ConPool) Close() {

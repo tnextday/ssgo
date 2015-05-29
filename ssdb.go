@@ -16,6 +16,8 @@ type Client struct {
 	netErr   error
 }
 
+type BatchExec [][]interface{}
+
 func Connect(ip string, port int) (*Client, error) {
 	addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", ip, port))
 	if err != nil {
@@ -53,6 +55,25 @@ func (c *Client)DoIgnoreErr(args ...interface{}) Reply {
 	}
 	return r
 }
+
+func (c *Client)BatchDo(batch BatchExec) (reps []ReplyE, e error) {
+	l := len(batch)
+	replys := make([]ReplyE, l)
+	errCount := 0
+
+	for i, args := range batch {
+		replys[i].R, replys[i].E = c.Do(args...)
+		if replys[i].E != nil {
+			errCount++
+		}
+	}
+
+	if errCount != 0 {
+		e = fmt.Errorf("BatchDo: get %d errors", errCount)
+	}
+	return replys, e
+}
+
 
 func (c *Client) Set(key string, val string) (interface{}, error) {
 	resp, err := c.Do("set", key, val)

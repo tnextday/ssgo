@@ -51,3 +51,21 @@ func TestClient(t *testing.T) {
 	}
 	t.Log("%v\n", s2)
 }
+
+func TestBatchDo(t *testing.T) {
+	cn, _ := pool.GetClient()
+	defer cn.Release()
+	batch := BatchExec{
+		{"set", "test1", "1"},
+		{"get", "test1"},
+		{"del", "test1"},
+		{"get", "test1"},
+	}
+	reps, e := cn.BatchDo(batch)
+	if e != nil {
+		t.Log(e)
+	}
+	for _, r := range reps{
+		t.Logf("%s : %v\n", r.R.String(), r.E)
+	}
+}

@@ -5,15 +5,20 @@ import (
 	"strconv"
 )
 
-const (
-	ReplyOK          string = "ok"
-	ReplyNotFound    string = "not_found"
-	ReplyError       string = "error"
-	ReplyFail        string = "fail"
-	ReplyClientError string = "client_error"
-)
+//const (
+//	ReplyOK          string = "ok"
+//	ReplyNotFound    string = "not_found"
+//	ReplyError       string = "error"
+//	ReplyFail        string = "fail"
+//	ReplyClientError string = "client_error"
+//)
 
 type Reply []string
+
+type ReplyE struct {
+	R Reply
+	E error
+}
 
 type Entry struct {
 	Key, Value string
