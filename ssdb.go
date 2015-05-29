@@ -305,11 +305,8 @@ func MakeKey(args ...interface{}) string {
 		case nil:
 			ss[i] = ""
 		default:
-			buf, e := json.Marshal(arg)
-			if e != nil {
-				return fmt.Errorf("bad arguments")
-			}
-			ss[i] = string(buf)
+			//TODO how to do ?
+			ss[i] = ""
 		}
 
 	}
