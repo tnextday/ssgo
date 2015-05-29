@@ -56,16 +56,19 @@ func (cr *ConPool) dialNew() (*Client, error) {
 	return cn, nil
 }
 
-//func (cr *ConPool) Cmd(args ...interface{}) *Reply {
-//
-//	cn, _ := cr.GetClient()
-//	defer cn.Release()
-//
-//	cn.sock.SetReadDeadline(time.Now().Add(cr.ctimeout))
-//	cn.sock.SetWriteDeadline(time.Now().Add(cr.ctimeout))
-//
-//	return cn.Cmd(args...)
-//}
+func (cr *ConPool) Do(args ...interface{}) (Reply, error) {
+
+	cn, e := cr.GetClient()
+	if e != nil {
+		return nil, e
+	}
+	defer cn.Release()
+
+	cn.sock.SetReadDeadline(time.Now().Add(cr.ctimeout))
+	cn.sock.SetWriteDeadline(time.Now().Add(cr.ctimeout))
+
+	return cn.Do(args...)
+}
 
 func (cr *ConPool) Close() {
 	var conn *Client
