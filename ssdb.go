@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"strings"
 )
 
 type Client struct {
@@ -48,7 +49,7 @@ func (c *Client) Do(args ...interface{}) (Reply, error) {
 	return resp[1:], nil
 }
 
-func (c *Client)DoIgnoreErr(args ...interface{}) Reply {
+func (c *Client) DoIgnoreErr(args ...interface{}) Reply {
 	r, e := c.Do(args...)
 	if e != nil {
 		return Reply{}
@@ -56,7 +57,7 @@ func (c *Client)DoIgnoreErr(args ...interface{}) Reply {
 	return r
 }
 
-func (c *Client)BatchDo(batch BatchExec) (reps []ReplyE, e error) {
+func (c *Client) BatchDo(batch BatchExec) (reps []ReplyE, e error) {
 	l := len(batch)
 	replys := make([]ReplyE, l)
 	errCount := 0
@@ -73,7 +74,6 @@ func (c *Client)BatchDo(batch BatchExec) (reps []ReplyE, e error) {
 	}
 	return replys, e
 }
-
 
 func (c *Client) Set(key string, val string) (interface{}, error) {
 	resp, err := c.Do("set", key, val)
@@ -140,7 +140,7 @@ func (c *Client) MultiHGet(name string, obj interface{}, keys ...string) error {
 	return ScanStruct(rep, obj)
 }
 
-func (c *Client) GenAutoIncId(name string) int64{
+func (c *Client) GenAutoIncId(name string) int64 {
 	rep, e := c.Do("incr", name)
 	if e != nil {
 		return 0
@@ -278,4 +278,40 @@ func (c *Client) Release() error {
 		return nil
 	}
 	return c.close()
+}
+
+func MakeKey(args ...interface{}) string {
+	ss := make([]string, len(args))
+	for i, arg := range args {
+		switch arg := arg.(type) {
+		case string:
+			ss[i] = arg
+		case []byte:
+			ss[i] = string(arg)
+		case []string:
+			ss[i] = strings.Join(arg, "_")
+		case int:
+			ss[i] = fmt.Sprintf("%x", arg)
+		case int64:
+			ss[i] = fmt.Sprintf("%x", arg)
+		case float64:
+			ss[i] = fmt.Sprintf("%f", arg)
+		case bool:
+			if arg {
+				ss[i] = "1"
+			} else {
+				ss[i] = "0"
+			}
+		case nil:
+			ss[i] = ""
+		default:
+			buf, e := json.Marshal(arg)
+			if e != nil {
+				return fmt.Errorf("bad arguments")
+			}
+			ss[i] = string(buf)
+		}
+
+	}
+	return strings.Join(ss, ":")
 }
