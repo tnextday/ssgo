@@ -1,4 +1,5 @@
 package ssgo
+
 import (
 	"testing"
 )
@@ -24,17 +25,18 @@ type ss1 struct {
 	Bf bool
 	ss0
 }
+
 func TestClient(t *testing.T) {
 	cn, _ := pool.GetClient()
 	defer cn.Release()
 
 	cn.MultiHSet("test1", ss1{
-		X:11,
-		I:22,
-		U:33,
-		S:"ss1",
-		Bt:true,
-		P:[]byte("sss3"),
+		X:  11,
+		I:  22,
+		U:  33,
+		S:  "ss1",
+		Bt: true,
+		P:  []byte("sss3"),
 	})
 
 	s := ss1{}
@@ -65,7 +67,7 @@ func TestBatchDo(t *testing.T) {
 	if e != nil {
 		t.Log(e)
 	}
-	for _, r := range reps{
+	for _, r := range reps {
 		t.Logf("%s : %v\n", r.R.String(), r.E)
 	}
 }

@@ -64,22 +64,21 @@ func (cr *ConPool) Do(args ...interface{}) (Reply, error) {
 	}
 	defer cn.Release()
 
-//	cn.sock.SetReadDeadline(time.Now().Add(cr.ctimeout))
-//	cn.sock.SetWriteDeadline(time.Now().Add(cr.ctimeout))
+	//	cn.sock.SetReadDeadline(time.Now().Add(cr.ctimeout))
+	//	cn.sock.SetWriteDeadline(time.Now().Add(cr.ctimeout))
 
 	return cn.Do(args...)
 }
 
-
-func (cr *ConPool)BatchDo(batch BatchExec) ([]ReplyE, error) {
+func (cr *ConPool) BatchDo(batch BatchExec) ([]ReplyE, error) {
 	cn, e := cr.GetClient()
 	if e != nil {
 		return nil, e
 	}
 	defer cn.Release()
 
-//	cn.sock.SetReadDeadline(time.Now().Add(cr.ctimeout))
-//	cn.sock.SetWriteDeadline(time.Now().Add(cr.ctimeout))
+	//	cn.sock.SetReadDeadline(time.Now().Add(cr.ctimeout))
+	//	cn.sock.SetWriteDeadline(time.Now().Add(cr.ctimeout))
 	return cn.BatchDo(batch)
 }
 

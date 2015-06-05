@@ -60,7 +60,6 @@ func convertAssignString(d reflect.Value, s string) (err error) {
 	return
 }
 
-
 type fieldSpec struct {
 	name      string
 	index     []int
@@ -216,7 +215,6 @@ func ScanStruct(src []string, dest interface{}) error {
 	}
 	return nil
 }
-
 
 // Args is a helper for constructing command arguments from structured values.
 type Args []interface{}
