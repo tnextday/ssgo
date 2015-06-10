@@ -280,31 +280,36 @@ func (c *Client) Release() error {
 }
 
 func MakeKey(args ...interface{}) string {
-	ss := make([]string, len(args))
-	for i, arg := range args {
+	ss := make([]string, 0, len(args))
+	for _, arg := range args {
+		var s string
 		switch arg := arg.(type) {
 		case string:
-			ss[i] = arg
+			s = arg
 		case []byte:
-			ss[i] = string(arg)
+			s = string(arg)
 		case []string:
-			ss[i] = strings.Join(arg, "_")
+			s = strings.Join(arg, "_")
 		case int, int8, int16, int32, int64,
 			uint, uint8, uint16, uint32, uint64:
-			ss[i] = fmt.Sprintf("%x", arg)
+			s = fmt.Sprintf("%d", arg)
 		case float32, float64, complex64, complex128:
-			ss[i] = fmt.Sprintf("%f", arg)
+			s = fmt.Sprintf("%f", arg)
 		case bool:
 			if arg {
-				ss[i] = "1"
+				s = "1"
 			} else {
-				ss[i] = "0"
+				s = "0"
 			}
-		case nil:
-			ss[i] = ""
+//		case nil:
+//			s = ""
 		default:
 			//TODO how to do ?
-			ss[i] = ""
+//			s = ""
+		}
+		if s != ""{
+
+			ss = append(ss, strings.TrimSpace(s))
 		}
 
 	}
