@@ -21,7 +21,8 @@ type ReplyE struct {
 }
 
 type Entry struct {
-	Key, Value string
+	Key   string `json:"key,omitempty"`
+	Value string `json:"value,omitempty"`
 }
 
 func (r Reply) String() string {
