@@ -107,16 +107,17 @@ func (r Reply) List() []string {
 	return r
 }
 
-func (r Reply) Hash() []Entry {
+func (r Reply) Hash() []*Entry {
 
-	hs := []Entry{}
+	l := len(r)
 
-	if len(r) < 2 {
-		return hs
+	if l < 2 {
+		return []*Entry{}
 	}
+	hs := make([]*Entry, 0, l / 2)
 
-	for i := 0; i < (len(r) - 1); i += 2 {
-		hs = append(hs, Entry{r[i], r[i+1]})
+	for i := 0; i < (l - 1); i += 2 {
+		hs = append(hs, &Entry{r[i], r[i+1]})
 	}
 
 	return hs
