@@ -114,7 +114,7 @@ func (r Reply) Hash() []*Entry {
 	if l < 2 {
 		return []*Entry{}
 	}
-	hs := make([]*Entry, 0, l / 2)
+	hs := make([]*Entry, 0, l/2)
 
 	for i := 0; i < (l - 1); i += 2 {
 		hs = append(hs, &Entry{r[i], r[i+1]})

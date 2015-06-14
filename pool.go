@@ -1,10 +1,10 @@
 package ssgo
 
 import (
+	"bufio"
 	"net"
 	"runtime"
 	"time"
-	"bufio"
 )
 
 type ConPool struct {
@@ -45,7 +45,7 @@ func dialTimeout(network, addr string) (*Client, error) {
 		return nil, err
 	}
 
-	return &Client{sock: sock, reader:bufio.NewReader(sock)}, nil
+	return &Client{sock: sock, reader: bufio.NewReader(sock)}, nil
 }
 
 func (cr *ConPool) dialNew() (*Client, error) {

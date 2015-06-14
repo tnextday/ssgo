@@ -55,8 +55,6 @@ func TestClientMultiFunc(t *testing.T) {
 	t.Log("%v\n", s2)
 }
 
-
-
 func TestBatchDo(t *testing.T) {
 	cn, _ := pool.GetClient()
 	defer cn.Release()
@@ -84,8 +82,8 @@ func makeValue(size int) []byte {
 	return val
 }
 
-func TestBigValue(t *testing.T){
-	v := makeValue(1024*1024)
+func TestBigValue(t *testing.T) {
+	v := makeValue(1024 * 1024)
 	cn, _ := pool.GetClient()
 	defer cn.Release()
 	batch := BatchExec{
@@ -97,7 +95,7 @@ func TestBigValue(t *testing.T){
 	if e != nil {
 		t.Log(e)
 	}
-	if reps[1].R.String() != string(v){
+	if reps[1].R.String() != string(v) {
 		t.Error("get value error")
 	}
 }

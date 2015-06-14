@@ -242,13 +242,12 @@ func (c *Client) recv() ([]string, error) {
 		if buf[size] != '\n' {
 			return nil, ErrProtocolError
 		}
-//		fmt.Println("read buf:", string(bb.Bytes()[:size]))
+		//		fmt.Println("read buf:", string(bb.Bytes()[:size]))
 
 		resp = append(resp, string(buf[:size]))
 	}
 	return resp, nil
 }
-
 
 // Close The Client Connection
 func (c *Client) close() error {
