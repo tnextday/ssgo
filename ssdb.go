@@ -1,16 +1,23 @@
 package ssgo
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"strconv"
 	"strings"
 )
 
+var (
+	ErrProtocolError = errors.New("ssdb protocol error")
+)
+
 type Client struct {
+	reader   *bufio.Reader
 	sock     *net.TCPConn
 	recv_buf bytes.Buffer
 	pool     *ConPool
@@ -30,6 +37,7 @@ func Connect(ip string, port int) (*Client, error) {
 	}
 	var c Client
 	c.sock = sock
+	c.reader = bufio.NewReader(sock)
 	return &c, nil
 }
 
@@ -207,61 +215,40 @@ func (c *Client) Recv() ([]string, error) {
 }
 
 func (c *Client) recv() ([]string, error) {
-	var tmp [1]byte
-	for {
-		resp := c.parse()
-		if resp == nil || len(resp) > 0 {
-			return resp, nil
-		}
-		n, err := c.sock.Read(tmp[0:])
-		if err != nil {
-			c.netErr = err
-			return nil, err
-		}
-		c.recv_buf.Write(tmp[0:n])
-	}
-}
-
-func (c *Client) parse() []string {
 	resp := []string{}
-	buf := c.recv_buf.Bytes()
-	var idx, offset int
-	idx = 0
-	offset = 0
-
+	bb := bytes.NewBuffer(nil)
 	for {
-		idx = bytes.IndexByte(buf[offset:], '\n')
-		if idx == -1 {
+		l, _, e := c.reader.ReadLine()
+		if e != nil {
+			return nil, e
+		}
+		if len(l) == 0 {
+			//empty line found
 			break
 		}
-		p := buf[offset : offset+idx]
-		offset += idx + 1
-		//fmt.Printf("> [%s]\n", p);
-		if len(p) == 0 || (len(p) == 1 && p[0] == '\r') {
-			if len(resp) == 0 {
-				continue
-			} else {
-				c.recv_buf.Next(offset)
-				return resp
-			}
+		size, e := strconv.Atoi(string(l))
+		if e != nil {
+			return nil, e
 		}
+		if size < 0 {
+			return nil, ErrProtocolError
+		}
+		bb.Reset()
+		_, e = io.CopyN(bb, c.reader, int64(size+1))
+		if e != nil {
+			return nil, e
+		}
+		buf := bb.Bytes()
+		if buf[size] != '\n' {
+			return nil, ErrProtocolError
+		}
+//		fmt.Println("read buf:", string(bb.Bytes()[:size]))
 
-		size, err := strconv.Atoi(string(p))
-		if err != nil || size < 0 {
-			return nil
-		}
-		if offset+size >= c.recv_buf.Len() {
-			break
-		}
-
-		v := buf[offset : offset+size]
-		resp = append(resp, string(v))
-		offset += size + 1
+		resp = append(resp, string(buf[:size]))
 	}
-
-	//fmt.Printf("buf.size: %d packet not ready...\n", len(buf))
-	return []string{}
+	return resp, nil
 }
+
 
 // Close The Client Connection
 func (c *Client) close() error {
@@ -301,13 +288,13 @@ func MakeKey(args ...interface{}) string {
 			} else {
 				s = "0"
 			}
-//		case nil:
-//			s = ""
+			//		case nil:
+			//			s = ""
 		default:
 			//TODO how to do ?
-//			s = ""
+			//			s = ""
 		}
-		if s != ""{
+		if s != "" {
 
 			ss = append(ss, strings.TrimSpace(s))
 		}
