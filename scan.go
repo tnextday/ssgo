@@ -1,5 +1,5 @@
 package ssgo
-
+// Copyright 2015 tNextDay
 // Copyright 2012 Gary Burd
 //
 // Licensed under the Apache License, Version 2.0 (the "License"): you may

@@ -56,15 +56,13 @@ func TestClientMultiFunc(t *testing.T) {
 }
 
 func TestBatchDo(t *testing.T) {
-	cn, _ := pool.GetClient()
-	defer cn.Release()
 	batch := BatchExec{
-		{"set", "test1", "aabb"},
-		{"get", "test1"},
-		{"del", "test1"},
-		{"get", "test1"},
+		{"set", "ssgo.test.test1", "aabb"},
+		{"get", "ssgo.test.test1"},
+		{"del", "ssgo.test.test1"},
+		{"get", "ssgo.test.test1"},
 	}
-	reps, e := cn.BatchDo(batch)
+	reps, e := pool.BatchDo(batch)
 	if e != nil {
 		t.Log(e)
 	}
@@ -84,14 +82,12 @@ func makeValue(size int) []byte {
 
 func TestBigValue(t *testing.T) {
 	v := makeValue(1024 * 1024)
-	cn, _ := pool.GetClient()
-	defer cn.Release()
 	batch := BatchExec{
-		{"set", "testBig", v},
-		{"get", "testBig"},
-		{"del", "testBig"},
+		{"set", "ssgo.test.testBig", v},
+		{"get", "ssgo.test.testBig"},
+		{"del", "ssgo.test.testBig"},
 	}
-	reps, e := cn.BatchDo(batch)
+	reps, e := pool.BatchDo(batch)
 	if e != nil {
 		t.Log(e)
 	}
