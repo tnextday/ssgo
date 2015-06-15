@@ -8,9 +8,9 @@ import (
 )
 
 type ConPool struct {
-	ctype    string
-	clink    string
-	ctimeout time.Duration
+	cType    string
+	cAddr    string
+	cTimeout time.Duration
 	conns    chan *Client
 }
 
@@ -21,26 +21,22 @@ func NewConPool(hostAddr string, maxConn int) *ConPool {
 	}
 
 	cr := &ConPool{
-		ctype:    "tcp",
-		clink:    hostAddr,
-		ctimeout: time.Duration(30) * time.Second,
+		cType:    "tcp",
+		cAddr:    hostAddr,
+		cTimeout: time.Duration(30) * time.Second,
 		conns:    make(chan *Client, maxConn),
 	}
-
-	//	if cr.ctimeout < 1*time.Second {
-	//		cr.ctimeout = 10 * time.Second
-	//	}
 
 	return cr
 }
 
 func dialTimeout(network, addr string) (*Client, error) {
 
-	raddr, err := net.ResolveTCPAddr(network, addr)
+	rAddr, err := net.ResolveTCPAddr(network, addr)
 	if err != nil {
 		return nil, err
 	}
-	sock, err := net.DialTCP(network, nil, raddr)
+	sock, err := net.DialTCP(network, nil, rAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +45,7 @@ func dialTimeout(network, addr string) (*Client, error) {
 }
 
 func (cr *ConPool) dialNew() (*Client, error) {
-	cn, err := dialTimeout(cr.ctype, cr.clink)
+	cn, err := dialTimeout(cr.cType, cr.cAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -65,9 +61,6 @@ func (cr *ConPool) Do(args ...interface{}) (Reply, error) {
 	}
 	defer cn.Release()
 
-	//	cn.sock.SetReadDeadline(time.Now().Add(cr.ctimeout))
-	//	cn.sock.SetWriteDeadline(time.Now().Add(cr.ctimeout))
-
 	return cn.Do(args...)
 }
 
@@ -78,8 +71,6 @@ func (cr *ConPool) BatchDo(batch BatchExec) ([]ReplyE, error) {
 	}
 	defer cn.Release()
 
-	//	cn.sock.SetReadDeadline(time.Now().Add(cr.ctimeout))
-	//	cn.sock.SetWriteDeadline(time.Now().Add(cr.ctimeout))
 	return cn.BatchDo(batch)
 }
 

@@ -17,11 +17,10 @@ var (
 )
 
 type Client struct {
-	reader   *bufio.Reader
-	sock     *net.TCPConn
-	recv_buf bytes.Buffer
-	pool     *ConPool
-	netErr   error
+	reader *bufio.Reader
+	sock   *net.TCPConn
+	pool   *ConPool
+	err    error
 }
 
 type BatchExec [][]interface{}
@@ -44,10 +43,14 @@ func Connect(ip string, port int) (*Client, error) {
 func (c *Client) Do(args ...interface{}) (Reply, error) {
 
 	if err := c.send(args); err != nil {
+		c.err = err
 		return nil, err
 	}
 
 	resp, err := c.recv()
+	if err != nil {
+		c.err = err
+	}
 	if err != nil || len(resp) < 1 {
 		return nil, err
 	}
@@ -204,9 +207,6 @@ func (c *Client) send(args []interface{}) error {
 	}
 	buf.WriteByte('\n')
 	_, err := c.sock.Write(buf.Bytes())
-	if err != nil {
-		c.netErr = err
-	}
 	return err
 }
 
@@ -255,7 +255,7 @@ func (c *Client) close() error {
 }
 
 func (c *Client) Release() error {
-	if c.netErr != nil {
+	if c.err != nil {
 		// if client have net error, try to close it
 		return c.close()
 	} else if c.pool != nil {
@@ -294,7 +294,6 @@ func MakeKey(args ...interface{}) string {
 			//			s = ""
 		}
 		if s != "" {
-
 			ss = append(ss, strings.TrimSpace(s))
 		}
 
