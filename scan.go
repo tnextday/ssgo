@@ -1,4 +1,5 @@
 package ssgo
+
 // Copyright 2015 tNextDay
 // Copyright 2012 Gary Burd
 //
